@@ -96,9 +96,10 @@ func (ioLayer *IoLayer) SaveFile() (*FileRef, error) {
 
 func writeToFile(ioLayer *IoLayer) error {
 
-	attrs := map[string]interface{}{
+	attrs := map[string]any{
 		"copressionAlgorithm": ioLayer.Bucket.CompressionType,
 		"comprassionInfo":     ioLayer.ObjectFile.ComprassionInfo,
+		"contentType":         ioLayer.ObjectFile.ContentType,
 	}
 
 	jsonBytes, err := json.Marshal(attrs)
@@ -123,4 +124,3 @@ func writeToFile(ioLayer *IoLayer) error {
 
 	return nil
 }
-

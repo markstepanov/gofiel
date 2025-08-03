@@ -8,6 +8,7 @@ import (
 	"gofiel/utils"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"strconv"
@@ -49,6 +50,7 @@ func writeFileToBucket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fileName := fileHeader.Filename
+	fileContentType := getContentTypeFromPart(fileHeader)
 	fileBytes, err := io.ReadAll(fileReader)
 
 	if err != nil {
@@ -78,8 +80,9 @@ func writeFileToBucket(w http.ResponseWriter, r *http.Request) {
 	var ioLayer iolayer.IoLayer = iolayer.IoLayer{
 		Bucket: bucket,
 		ObjectFile: iolayer.ObjectFile{
-			RawFile:  &fileBytes,
-			Filename: fileName,
+			RawFile:     &fileBytes,
+			Filename:    fileName,
+			ContentType: fileContentType,
 		},
 	}
 
@@ -109,5 +112,13 @@ func readFileFromStorage(w http.ResponseWriter, r *http.Request) {
 	myMap := map[string]any{}
 	json.Unmarshal(jsonBytes, &myMap)
 	log.Println(myMap)
+}
 
+func getContentTypeFromPart(header *multipart.FileHeader) string {
+	// Use the header to get content-type of this part
+	if ct := header.Header.Get("Content-Type"); ct != "" {
+		return ct
+	}
+	// Default fallback
+	return "application/octet-stream"
 }
