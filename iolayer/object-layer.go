@@ -96,6 +96,19 @@ func (ioLayer *IoLayer) SaveFile() (*FileRef, error) {
 }
 
 func (ioLayer *IoLayer) FindFile() error {
+	// TODO currenly working on this
+	// bucketId := r.Header.Get("bucket-id")
+
+	bytes, err := os.ReadFile("/Users/markstepanov/go_stuff/hello/static/fistBucket/2025-07-14 08-09-38.mov/data.xxl")
+	if err != nil {
+		return err
+	}
+
+	a := int(binary.BigEndian.Uint32(bytes[3:7]))
+	jsonBytes := bytes[7 : 7+a]
+
+	myMap := map[string]any{}
+	json.Unmarshal(jsonBytes, &myMap)
 
 	return nil
 }

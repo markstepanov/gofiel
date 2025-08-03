@@ -1,16 +1,12 @@
 package storageapi
 
 import (
-	"encoding/binary"
-	"encoding/json"
 	"gofiel/bucket"
 	"gofiel/iolayer"
 	"gofiel/utils"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -128,22 +124,6 @@ func getFileFromBucket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte("Hello world"))
-}
-
-func readFileFromStorage(w http.ResponseWriter, r *http.Request) {
-	// bucketId := r.Header.Get("bucket-id")
-
-	bytes, err := os.ReadFile("/Users/markstepanov/go_stuff/hello/static/fistBucket/2025-07-14 08-09-38.mov/data.xxl")
-	if err != nil {
-		return
-	}
-
-	a := int(binary.BigEndian.Uint32(bytes[3:7]))
-	jsonBytes := bytes[7 : 7+a]
-
-	myMap := map[string]any{}
-	json.Unmarshal(jsonBytes, &myMap)
-	log.Println(myMap)
 }
 
 func getContentTypeFromPart(header *multipart.FileHeader) string {
