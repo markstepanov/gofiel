@@ -25,13 +25,3 @@ func WriteBasicResp(w http.ResponseWriter, body any, errCode int, desc string) {
 	}
 	w.Write(json)
 }
-
-func PostMethod(next func(w http.ResponseWriter, r *http.Request)) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-			return
-		}
-		http.HandlerFunc(next).ServeHTTP(w, r)
-	})
-}

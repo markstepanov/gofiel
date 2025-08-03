@@ -1,12 +1,12 @@
 package server
 
 import (
-	storageapi "hello/storage-api"
+	storageapi "gofiel/storage-api"
 	"log"
 	"net/http"
 )
 
-func ServerStart(){
+func ServerStart() {
 
 	registerEndpoints()
 
@@ -16,7 +16,7 @@ func ServerStart(){
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
 
-
-func registerEndpoints(){
+func registerEndpoints() {
 	storageapi.RegisterStorageApiEndpoints()
 }
+

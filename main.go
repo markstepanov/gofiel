@@ -1,8 +1,8 @@
 package main
 
+import "gofiel/server"
 
-import "hello/server"
-
-func main(){
+func main() {
 	server.ServerStart()
 }
+

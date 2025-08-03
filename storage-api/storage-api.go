@@ -3,9 +3,9 @@ package storageapi
 import (
 	"encoding/binary"
 	"encoding/json"
-	"hello/bucket"
-	"hello/iolayer"
-	"hello/utils"
+	"gofiel/bucket"
+	"gofiel/iolayer"
+	"gofiel/utils"
 	"io"
 	"log"
 	"net/http"
@@ -21,19 +21,19 @@ func RegisterStorageApiEndpoints() {
 func handleFileEndoint(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
-		{
-			writeFileToBucket(w, r)
-		}
+		writeFileToBucket(w, r)
 	case http.MethodGet:
-		{
-			getFileFromBucket(w, r)
-		}
+		getFileFromBucket(w, r)
+	default:
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 	}
-
-	http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 }
 
 func writeFileToBucket(w http.ResponseWriter, r *http.Request) {
+	// TODO  get rid of multipart data,
+	// Get content-type, write it into object metadata and wtire whole body []bytes to storage,
+	// bucket-id should be supplied in separate header
+
 	multipartHeader := r.Header.Get("Content-Type")
 
 	if multipartHeader == "" || !strings.Contains(multipartHeader, "multipart/form-data") {
@@ -94,7 +94,7 @@ func writeFileToBucket(w http.ResponseWriter, r *http.Request) {
 }
 
 func getFileFromBucket(w http.ResponseWriter, r *http.Request) {
-
+	w.Write([]byte("Hello world"))
 }
 
 func readFileFromStorage(w http.ResponseWriter, r *http.Request) {
@@ -106,7 +106,7 @@ func readFileFromStorage(w http.ResponseWriter, r *http.Request) {
 	a := int(binary.BigEndian.Uint32(bytes[3:7]))
 	jsonBytes := bytes[7 : 7+a]
 
-	myMap := map[string]interface{}{}
+	myMap := map[string]any{}
 	json.Unmarshal(jsonBytes, &myMap)
 	log.Println(myMap)
 

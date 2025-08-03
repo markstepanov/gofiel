@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
-	"hello/comprassion"
+	"gofiel/comprassion"
 	"log"
 	"os"
 	"path"
@@ -20,11 +20,11 @@ func dirExists(path string) bool {
 
 func (ioLayer *IoLayer) InitializeObjectStorage() error {
 	objectPath := path.Join(ioLayer.Bucket.Path, ioLayer.ObjectFile.Filename)
-	
-	// TODO right now just replace spaces to undescore 
+
+	// TODO right now just replace spaces to undescore
 	// objectPath = strings.ReplaceAll(objectPath, " ", "_")
 
-	if dirExists(objectPath){
+	if dirExists(objectPath) {
 		return errors.New("object already exists")
 	}
 
@@ -39,13 +39,12 @@ func (ioLayer *IoLayer) InitializeObjectStorage() error {
 	file, err := os.Create(objectPath)
 
 	if err != nil {
-		return  err
+		return err
 	}
 
 	// file will be closed after all manipulations
 
-
-	ioLayer.ObjectFile.File = file  
+	ioLayer.ObjectFile.File = file
 
 	return nil
 }
@@ -53,21 +52,20 @@ func (ioLayer *IoLayer) InitializeObjectStorage() error {
 func (ioLayer *IoLayer) CompressFile() error {
 	compressedFile, err := comprassion.CompressBytes(ioLayer.ObjectFile.RawFile, ioLayer.Bucket.CompressionType)
 	if err != nil {
-		return  err
+		return err
 	}
 
 	ioLayer.ObjectFile.CompressedFile = compressedFile
-	return  nil
+	return nil
 }
 
-
-func (ioLayer *IoLayer) SaveFile() (*FileRef, error){
+func (ioLayer *IoLayer) SaveFile() (*FileRef, error) {
 	err := ioLayer.InitializeObjectStorage()
 
 	log.Println(ioLayer.ObjectFile.File)
 
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
 
 	err = ioLayer.CompressFile()
@@ -75,11 +73,10 @@ func (ioLayer *IoLayer) SaveFile() (*FileRef, error){
 		return nil, err
 	}
 
-
 	ioLayer.ObjectFile.ComprassionInfo = comprassion.ComprassionInfo{
-			UncompressedSize: len(*ioLayer.ObjectFile.RawFile),
-			CompressedSize: len(*ioLayer.ObjectFile.CompressedFile),
-		}
+		UncompressedSize: len(*ioLayer.ObjectFile.RawFile),
+		CompressedSize:   len(*ioLayer.ObjectFile.CompressedFile),
+	}
 
 	err = writeToFile(ioLayer)
 
@@ -89,23 +86,21 @@ func (ioLayer *IoLayer) SaveFile() (*FileRef, error){
 
 	}
 
-
 	ioLayer.ObjectFile.File.Close()
 
 	return &FileRef{
 		Comprassion: ioLayer.ObjectFile.ComprassionInfo,
-		Bucket: ioLayer.Bucket.Name,
-
-		}, nil
+		Bucket:      ioLayer.Bucket.Name,
+	}, nil
 }
 
 func writeToFile(ioLayer *IoLayer) error {
-	
-	attrs  := map[string]interface{}{
+
+	attrs := map[string]interface{}{
 		"copressionAlgorithm": ioLayer.Bucket.CompressionType,
-		"comprassionInfo": ioLayer.ObjectFile.ComprassionInfo,
+		"comprassionInfo":     ioLayer.ObjectFile.ComprassionInfo,
 	}
-	
+
 	jsonBytes, err := json.Marshal(attrs)
 	if err != nil {
 		return err
@@ -113,14 +108,12 @@ func writeToFile(ioLayer *IoLayer) error {
 
 	length := uint32(len(jsonBytes))
 
-
 	jsonLen := make([]byte, 4)
 	binary.BigEndian.PutUint32(jsonLen, length)
 
-
 	header := append(
 		[]byte{},
-		[]byte("XXL")...
+		[]byte("XXL")...,
 	)
 
 	header = append(header, jsonLen...)
@@ -130,3 +123,4 @@ func writeToFile(ioLayer *IoLayer) error {
 
 	return nil
 }
+
