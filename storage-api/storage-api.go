@@ -31,10 +31,6 @@ func handleFileEndoint(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeFileToBucket(w http.ResponseWriter, r *http.Request) {
-	// TODO  get rid of multipart data,
-	// Get content-type, write it into object metadata and wtire whole body []bytes to storage,
-	// bucket-id should be supplied in separate header
-
 	multipartHeader := r.Header.Get("Content-Type")
 
 	if multipartHeader == "" || !strings.Contains(multipartHeader, "multipart/form-data") {
@@ -97,10 +93,46 @@ func writeFileToBucket(w http.ResponseWriter, r *http.Request) {
 }
 
 func getFileFromBucket(w http.ResponseWriter, r *http.Request) {
+	filename := r.URL.Query().Get("filename")
+
+	if filename == "" {
+		utils.WriteBasicResp(w, nil, 1, "filename is not specified")
+		return
+	}
+
+	bucketid, err := strconv.Atoi(r.Header.Get("bucket-id"))
+
+	if err != nil {
+		utils.WriteBasicResp(w, nil, 6, "Bucket form is not present")
+		return
+	}
+
+	bucket, err := bucket.FindBucketById(bucketid)
+
+	if err != nil {
+		utils.WriteBasicResp(w, nil, 4, "Bucket is not present")
+		return
+	}
+
+	ioLayer := iolayer.IoLayer{
+		Bucket: bucket,
+		ObjectFile: iolayer.ObjectFile{
+			Filename: filename,
+		},
+	}
+
+	err = ioLayer.FindFile()
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	w.Write([]byte("Hello world"))
 }
 
 func readFileFromStorage(w http.ResponseWriter, r *http.Request) {
+	// bucketId := r.Header.Get("bucket-id")
+
 	bytes, err := os.ReadFile("/Users/markstepanov/go_stuff/hello/static/fistBucket/2025-07-14 08-09-38.mov/data.xxl")
 	if err != nil {
 		return
@@ -115,10 +147,8 @@ func readFileFromStorage(w http.ResponseWriter, r *http.Request) {
 }
 
 func getContentTypeFromPart(header *multipart.FileHeader) string {
-	// Use the header to get content-type of this part
 	if ct := header.Header.Get("Content-Type"); ct != "" {
 		return ct
 	}
-	// Default fallback
 	return "application/octet-stream"
 }

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"gofiel/comprassion"
-	"log"
 	"os"
 	"path"
 )
@@ -59,10 +58,12 @@ func (ioLayer *IoLayer) CompressFile() error {
 	return nil
 }
 
+func (ioLayer *IoLayer) DecompressFIle() error {
+	return nil
+}
+
 func (ioLayer *IoLayer) SaveFile() (*FileRef, error) {
 	err := ioLayer.InitializeObjectStorage()
-
-	log.Println(ioLayer.ObjectFile.File)
 
 	if err != nil {
 		return nil, err
@@ -92,6 +93,11 @@ func (ioLayer *IoLayer) SaveFile() (*FileRef, error) {
 		Comprassion: ioLayer.ObjectFile.ComprassionInfo,
 		Bucket:      ioLayer.Bucket.Name,
 	}, nil
+}
+
+func (ioLayer *IoLayer) FindFile() error {
+
+	return nil
 }
 
 func writeToFile(ioLayer *IoLayer) error {

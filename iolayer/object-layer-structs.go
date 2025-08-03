@@ -28,5 +28,7 @@ type FileRef struct {
 type IoLayerApi interface {
 	InitializeObjectStorage() (string, error)
 	CompressFile() error
+	DecompressFIle() error
 	SaveFile() (FileRef, error)
+	FindFile() error
 }
