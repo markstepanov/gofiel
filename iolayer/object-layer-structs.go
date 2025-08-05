@@ -6,6 +6,11 @@ import (
 	"os"
 )
 
+type ObjectMetadata struct {
+	ComprassionInfo comprassion.ComprassionInfo
+	ContentType     string
+}
+
 type ObjectFile struct {
 	RawFile         *[]byte
 	CompressedFile  *[]byte

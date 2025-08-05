@@ -5,11 +5,18 @@ import (
 	"gofiel/iolayer"
 	"gofiel/utils"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"strconv"
 	"strings"
 )
+
+// TODO: CREATE ENDPOINT FOR GETTING ALL AVAILABLE BUCKETS
+
+// TODO: CREATE ENDPOINT FOR GETTING ALL FILENAMES IN THE BUCKET
+// MAYBE ADD PAGGINATION (HOW NOT TO QUERY ALL FILES IF WE NEED TO PERFORM os.ReadDir()??)
+// ACTUALLY HADRD QUESTION
 
 func RegisterStorageApiEndpoints() {
 	http.HandleFunc("/file", handleFileEndoint)
@@ -96,14 +103,18 @@ func getFileFromBucket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bucketid, err := strconv.Atoi(r.Header.Get("bucket-id"))
+	// TODO: maybe requertParam of bucket will be more test friendly,
+	// might keep it as an option
 
-	if err != nil {
-		utils.WriteBasicResp(w, nil, 6, "Bucket form is not present")
-		return
-	}
+	// bucketid, err := strconv.Atoi(r.Header.Get("bucket-id"))
+	//
+	// if err != nil {
+	// 	utils.WriteBasicResp(w, nil, 6, "Bucket form is not present")
+	// 	return
+	// }
 
-	bucket, err := bucket.FindBucketById(bucketid)
+	// bucket, err := bucket.FindBucketById(bucketid)
+	bucket, err := bucket.FindBucketById(1)
 
 	if err != nil {
 		utils.WriteBasicResp(w, nil, 4, "Bucket is not present")
@@ -118,12 +129,16 @@ func getFileFromBucket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = ioLayer.FindFile()
+
 	if err != nil {
+		log.Println(err.Error())
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	w.Write([]byte("Hello world"))
+	w.Header().Add("Content-Type", ioLayer.ObjectFile.ContentType)
+	w.Write(*ioLayer.ObjectFile.RawFile)
+
 }
 
 func getContentTypeFromPart(header *multipart.FileHeader) string {

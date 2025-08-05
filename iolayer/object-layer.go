@@ -7,6 +7,7 @@ import (
 	"gofiel/comprassion"
 	"os"
 	"path"
+	"strings"
 )
 
 func dirExists(path string) bool {
@@ -75,14 +76,15 @@ func (ioLayer *IoLayer) SaveFile() (*FileRef, error) {
 	}
 
 	ioLayer.ObjectFile.ComprassionInfo = comprassion.ComprassionInfo{
-		UncompressedSize: len(*ioLayer.ObjectFile.RawFile),
-		CompressedSize:   len(*ioLayer.ObjectFile.CompressedFile),
+		UncompressedSize:     len(*ioLayer.ObjectFile.RawFile),
+		CompressedSize:       len(*ioLayer.ObjectFile.CompressedFile),
+		ComprassionAlgorithm: ioLayer.Bucket.CompressionType,
 	}
 
 	err = writeToFile(ioLayer)
 
 	if err != nil {
-		// todo decide on logic that will delete whole object storage files and path
+		// TODO:  decide on logic that will delete whole object storage files and path
 		return nil, err
 
 	}
@@ -96,29 +98,78 @@ func (ioLayer *IoLayer) SaveFile() (*FileRef, error) {
 }
 
 func (ioLayer *IoLayer) FindFile() error {
-	// TODO currenly working on this
-	// bucketId := r.Header.Get("bucket-id")
+	objectPath := path.Join(ioLayer.Bucket.Path, ioLayer.ObjectFile.Filename)
 
-	bytes, err := os.ReadFile("/Users/markstepanov/go_stuff/hello/static/fistBucket/2025-07-14 08-09-38.mov/data.xxl")
+	err := verifyGetFileRequest(ioLayer, objectPath)
+
 	if err != nil {
 		return err
 	}
 
-	a := int(binary.BigEndian.Uint32(bytes[3:7]))
-	jsonBytes := bytes[7 : 7+a]
+	filePath := path.Join(objectPath, "data.xxl")
+	bytes, err := os.ReadFile(path.Join(objectPath, "data.xxl"))
 
-	myMap := map[string]any{}
-	json.Unmarshal(jsonBytes, &myMap)
+	if err != nil {
+		return errors.New("failed while reading filepath: " + filePath)
+	}
 
+	header := string(bytes[0:3])
+
+	if header != "XXL" {
+		return errors.New("file does not contain XXL header.filepath: " + filePath)
+	}
+
+	metaInfoLen := int(binary.BigEndian.Uint32(bytes[3:7]))
+	jsonBytes := bytes[7 : 7+metaInfoLen]
+	metaInfo := ObjectMetadata{}
+
+	err = json.Unmarshal(jsonBytes, &metaInfo)
+
+	if err != nil {
+		return errors.New("failed to read metaInfo for file : " + filePath)
+	}
+
+	compressedFileObject := bytes[7+metaInfoLen:]
+
+	if len(compressedFileObject) == 0 {
+		return errors.New("header and metainfo is present, but compressedFileObject len is 0 for file: " + filePath)
+	}
+
+	decompressedBytes, err := comprassion.DecompresBytes(&compressedFileObject, &metaInfo.ComprassionInfo)
+
+	if err != nil {
+		return err
+	}
+
+	ioLayer.ObjectFile.CompressedFile = &compressedFileObject
+	ioLayer.ObjectFile.ComprassionInfo = metaInfo.ComprassionInfo
+	ioLayer.ObjectFile.RawFile = decompressedBytes
+	ioLayer.ObjectFile.ContentType = metaInfo.ContentType
+
+	return nil
+}
+
+func verifyGetFileRequest(ioLayer *IoLayer, objectPath string) error {
+	if strings.Contains(ioLayer.ObjectFile.Filename, "/") {
+		return errors.New("invalid filename")
+	}
+
+	pathInfo, err := os.Stat(objectPath)
+	if err != nil {
+		return err
+	}
+
+	if !pathInfo.IsDir() {
+		return errors.New("unknown path")
+	}
 	return nil
 }
 
 func writeToFile(ioLayer *IoLayer) error {
 
-	attrs := map[string]any{
-		"copressionAlgorithm": ioLayer.Bucket.CompressionType,
-		"comprassionInfo":     ioLayer.ObjectFile.ComprassionInfo,
-		"contentType":         ioLayer.ObjectFile.ContentType,
+	attrs := ObjectMetadata{
+		ComprassionInfo: ioLayer.ObjectFile.ComprassionInfo,
+		ContentType:     ioLayer.ObjectFile.ContentType,
 	}
 
 	jsonBytes, err := json.Marshal(attrs)

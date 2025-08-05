@@ -1,17 +1,13 @@
 package comprassion
 
 type ComprassionInfo struct {
-	UncompressedSize int
-	CompressedSize int
+	ComprassionAlgorithm string
+	UncompressedSize     int
+	CompressedSize       int
 }
 
 var ComressionGzip = "Gzip"
 var ComressionZstd = "Zstd"
 var ComressionNone = "non-compressed"
 
-var AvailableCompressions = [3]string{ComressionGzip, ComressionZstd, ComressionNone }
-
-
-
-
-
+var AvailableCompressions = [3]string{ComressionGzip, ComressionZstd, ComressionNone}
