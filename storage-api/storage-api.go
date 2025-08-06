@@ -5,14 +5,11 @@ import (
 	"gofiel/iolayer"
 	"gofiel/utils"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"strconv"
 	"strings"
 )
-
-// TODO: CREATE ENDPOINT FOR GETTING ALL AVAILABLE BUCKETS
 
 // TODO: CREATE ENDPOINT FOR GETTING ALL FILENAMES IN THE BUCKET
 // MAYBE ADD PAGGINATION (HOW NOT TO QUERY ALL FILES IF WE NEED TO PERFORM os.ReadDir()??)
@@ -20,6 +17,25 @@ import (
 
 func RegisterStorageApiEndpoints() {
 	http.HandleFunc("/file", handleFileEndoint)
+	http.HandleFunc("/bucket", handleBuckets)
+}
+
+func handleBuckets(w http.ResponseWriter, r *http.Request) {
+
+	type BucketResp struct {
+		Id              int
+		Name            string
+		CompressionType string
+	}
+
+	var toReturn []BucketResp = []BucketResp{}
+
+	for _, val := range bucket.Bukets {
+		toReturn = append(toReturn, BucketResp{val.Id, val.Name, val.CompressionType})
+	}
+
+	utils.WriteBasicResp(w, toReturn, 0, "")
+
 }
 
 func handleFileEndoint(w http.ResponseWriter, r *http.Request) {
@@ -131,7 +147,6 @@ func getFileFromBucket(w http.ResponseWriter, r *http.Request) {
 	err = ioLayer.FindFile()
 
 	if err != nil {
-		log.Println(err.Error())
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
