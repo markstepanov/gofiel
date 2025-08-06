@@ -11,6 +11,16 @@ type Bucket struct {
 	CompressionType string
 }
 
+type BucketResp struct {
+	Id              int
+	Name            string
+	CompressionType string
+}
+
+func (bucket *Bucket) toBucketResp() BucketResp {
+	return BucketResp{bucket.Id, bucket.Name, bucket.CompressionType}
+}
+
 var testBucket1 = Bucket{
 	Id:              1,
 	Name:            "fistBucket",
