@@ -1,6 +1,7 @@
 package server
 
 import (
+	"gofiel/config"
 	storageapi "gofiel/storage-api"
 	"log"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 
 func ServerStart() {
 
+	config.ReadConfigFile()
 	registerEndpoints()
 
 	// TODO read configs
@@ -19,4 +21,3 @@ func ServerStart() {
 func registerEndpoints() {
 	storageapi.RegisterStorageApiEndpoints()
 }
-

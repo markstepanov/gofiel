@@ -1,5 +1,7 @@
 package config
 
+var GlobalServerConfig Config
+
 type Config struct {
 	Port          int    `yaml:"port"`
 	BaseDir       string `yaml:"base-dir"`
