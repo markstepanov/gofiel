@@ -3,8 +3,8 @@ package config
 var GlobalServerConfig Config
 
 type Config struct {
-	Port          int    `yaml:"port"`
-	BaseDir       string `yaml:"base-dir"`
-	AdminUsername string `yaml:"admin-username"`
-	AdminPassword string `yaml:"admin-password"`
+	Port          string `yaml:"port"`
+	Basedir       string `yaml:"base-dir"`
+	Adminusername string `yaml:"admin-username"`
+	Adminpassword string `yaml:"admin-password"`
 }

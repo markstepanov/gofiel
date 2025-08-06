@@ -1,6 +1,7 @@
 package server
 
 import (
+	"gofiel/bucket"
 	"gofiel/config"
 	storageapi "gofiel/storage-api"
 	"log"
@@ -8,16 +9,30 @@ import (
 )
 
 func ServerStart() {
+	err := config.ReadConfigFile()
 
-	config.ReadConfigFile()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Config file read and set")
+
+	err = bucket.RegisterBuckets()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Bucket info read and set")
+
 	registerEndpoints()
 
-	// TODO read configs
+	log.Println("Server started on port: " + config.GlobalServerConfig.Port)
 
-	log.Println("Server started on port 8000")
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	log.Fatal(http.ListenAndServe(":"+config.GlobalServerConfig.Port, nil))
 }
 
 func registerEndpoints() {
 	storageapi.RegisterStorageApiEndpoints()
+	bucket.RegisterBucketApiEndpoints()
 }
