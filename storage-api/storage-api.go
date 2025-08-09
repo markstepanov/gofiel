@@ -7,7 +7,6 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"strconv"
 	"strings"
 )
 
@@ -55,14 +54,14 @@ func writeFileToBucket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bucketid, err := strconv.Atoi(r.PostForm.Get("bucket-id"))
+	bucketName := r.PostForm.Get("bucket")
 
-	if err != nil {
+	if bucketName == "" {
 		utils.WriteBasicResp(w, nil, 6, "Bucket form is not present")
 		return
 	}
 
-	bucket, err := bucket.FindBucketById(bucketid)
+	bucket, err := bucket.FindBucketByName(bucketName)
 
 	if err != nil {
 		utils.WriteBasicResp(w, nil, 4, "Bucket is not present")
@@ -107,7 +106,7 @@ func getFileFromBucket(w http.ResponseWriter, r *http.Request) {
 	// }
 
 	// bucket, err := bucket.FindBucketById(bucketid)
-	bucket, err := bucket.FindBucketById(1)
+	bucket, err := bucket.FindBucketByName("firstBucket")
 
 	if err != nil {
 		utils.WriteBasicResp(w, nil, 4, "Bucket is not present")

@@ -1,3 +1,5 @@
 config.yaml
 storage/
 .DS_Store
+.vscode
+        

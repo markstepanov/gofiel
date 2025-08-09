@@ -29,16 +29,16 @@ func handleBuckets(w http.ResponseWriter, r *http.Request) {
 
 func getBuckets(w http.ResponseWriter, r *http.Request) {
 	var toReturn []BucketResp = []BucketResp{}
-	for _, val := range Bukets {
+	for _, val := range Buckets {
 		toReturn = append(toReturn, val.toBucketResp())
 	}
 	utils.WriteBasicResp(w, toReturn, 0, "")
 }
 
 func addBucket(w http.ResponseWriter, r *http.Request) {
-	addBucketResp := AddBucketResp{}
+	addBucketReq := AddBucketReq{}
 
-	err := json.NewDecoder(r.Body).Decode(&addBucketResp)
+	err := json.NewDecoder(r.Body).Decode(&addBucketReq)
 
 	if err != nil {
 		log.Println(err.Error())
@@ -46,11 +46,20 @@ func addBucket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if addBucketResp.Name == "" {
+	if addBucketReq.Name == "" {
+		log.Println(err.Error())
 		utils.WriteBasicResp(w, nil, 7, "invalid invalid bucket-name")
 		return
 	}
 
-	utils.WriteBasicResp(w, Bucket{Id: 6969, Name: addBucketResp.Name}, 0, "")
+	newBucket, err := createNewBucket(addBucketReq.Name)
 
+	if err != nil {
+		// TODO: RollbackAllCreateNewBucketStateModifications(addBucketReq.Name)
+		log.Println(err.Error())
+		utils.WriteBasicResp(w, nil, 7, "failed while creating the bucket")
+		return
+	}
+
+	utils.WriteBasicResp(w, newBucket, 0, "")
 }

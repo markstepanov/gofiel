@@ -1,24 +1,22 @@
 package bucket
 
 type Bucket struct {
-	Id              int
 	Name            string
 	Path            string
 	CompressionType string
 }
 
-type AddBucketResp struct {
+type AddBucketReq struct {
 	Name string `json:"name"`
 }
 
 type BucketResp struct {
-	Id              int
 	Name            string
 	CompressionType string
 }
 
 func (bucket *Bucket) toBucketResp() BucketResp {
-	return BucketResp{bucket.Id, bucket.Name, bucket.CompressionType}
+	return BucketResp{bucket.Name, bucket.CompressionType}
 }
 
 // var testBucket1 = Bucket{
@@ -37,4 +35,4 @@ func (bucket *Bucket) toBucketResp() BucketResp {
 
 // var Bukets = []Bucket{testBucket1, tetsbucket2}
 
-var Bukets = map[int]Bucket{}
+var Buckets = map[string]Bucket{}
